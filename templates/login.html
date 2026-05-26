@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Sign In — VaultKey{% endblock %}
+{% block content %}
+<div class="auth-root">
+  <div class="auth-brand">
+    <div class="brand-lockup">
+      <div class="brand-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="#c8f060"/>
+          <path d="M18 8C14.13 8 11 11.13 11 15c0 2.97 1.8 5.52 4.4 6.65V26h5.2v-4.35C23.2 20.52 25 17.97 25 15c0-3.87-3.13-7-7-7z" fill="#0a0a0a"/>
+          <circle cx="18" cy="15" r="2.5" fill="#c8f060"/>
+        </svg>
+      </div>
+      <span class="brand-name">VaultKey</span>
+    </div>
+    <p class="brand-tagline" id="login-tagline">Your secrets, encrypted and organized.</p>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <h1 class="auth-title" id="login-title">Welcome back</h1>
+      <p class="auth-sub" id="login-sub">Sign in to access your vault</p>
+    </div>
+
+    <div id="auth-alert" class="auth-alert d-none"></div>
+    <div id="auth-success" class="auth-success d-none"></div>
+
+    <!-- ── Google Sign-In Button ────────────────────────────── -->
+    <a href="/login/google" class="btn-google" id="btn-google">
+      <span class="btn-google-icon">
+        <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
+      </span>
+      <span class="btn-google-text">Continue with Google</span>
+    </a>
+
+    <!-- ── Divider ───────────────────────────────────────────── -->
+    <div class="auth-divider">
+      <div class="auth-divider-line"></div>
+      <span class="auth-divider-text">or sign in with password</span>
+      <div class="auth-divider-line"></div>
+    </div>
+
+    <!-- ── Password Login Form ──────────────────────────────── -->
+    <form id="login-form" class="auth-form" autocomplete="off" novalidate>
+      <div class="field-group">
+        <label class="field-label">Username or Email</label>
+        <input type="text" id="identifier" class="field-input"
+               placeholder="you@example.com"
+               autocomplete="username" required/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Master Password</label>
+        <div class="password-wrap">
+          <input type="password" id="password" class="field-input"
+                 placeholder="Enter your password"
+                 autocomplete="current-password" required/>
+          <button type="button" class="toggle-pw" onclick="togglePassword('password')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="field-row" style="display:flex; justify-content:space-between; align-items:center;">
+        <label class="check-label">
+          <input type="checkbox" id="remember" class="check-box"/>
+          <span>Remember me</span>
+        </label>
+        <a href="/forgot-password" class="auth-link" style="font-size:13px; text-decoration:none;">
+          Forgot Password?
+        </a>
+      </div>
+      <button type="submit" class="btn-primary-full" id="login-btn">
+        <span class="btn-text">Sign In</span>
+        <span class="btn-loader d-none"></span>
+      </button>
+    </form>
+
+    <!-- Normal mode -->
+    <p class="auth-switch" id="login-switch">
+      Don't have an account? <a href="/register" class="auth-link">Create one</a>
+    </p>
+
+    <!-- Add-account mode -->
+    <div id="add-account-switch" style="display:none;">
+      <p class="auth-switch">
+        New to VaultKey? <a href="/register?add=1" class="auth-link">Create a new account</a>
+      </p>
+      <p class="auth-switch" style="margin-top:0.5rem;">
+        <a href="/dashboard" class="auth-link">← Back to Dashboard</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Add-account mode UI tweak ────────────────────────────────
+(function () {
+  const params  = new URLSearchParams(window.location.search);
+  const addMode = params.get('add') === '1';
+
+  if (addMode) {
+    document.getElementById('login-title').textContent   = 'Add another account';
+    document.getElementById('login-sub').textContent     = 'Sign in to add it to your active vault session';
+    document.getElementById('login-tagline').textContent = 'Switch between accounts instantly.';
+    document.getElementById('login-switch').style.display       = 'none';
+    document.getElementById('add-account-switch').style.display = 'block';
+  }
+
+  // Surface OAuth errors passed as query-string params
+  const error = params.get('error');
+  if (error) {
+    const messages = {
+      'oauth_failed': 'Google sign-in failed. Please try again.',
+      'no_email':     'Google did not share your email address. Please allow email access and try again.',
+    };
+    const alertBox = document.getElementById('auth-alert');
+    alertBox.textContent = messages[error] || 'An error occurred. Please try again.';
+    alertBox.classList.remove('d-none');
+  }
+})();
+
+// ── Password login form ──────────────────────────────────────
+document.getElementById('login-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const btn    = document.getElementById('login-btn');
+  const alert  = document.getElementById('auth-alert');
+  btn.disabled = true;
+  btn.querySelector('.btn-text').classList.add('d-none');
+  btn.querySelector('.btn-loader').classList.remove('d-none');
+  alert.classList.add('d-none');
+
+  const res  = await fetch('/api/login', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({
+      identifier: document.getElementById('identifier').value,
+      password:   document.getElementById('password').value,
+      remember:   document.getElementById('remember').checked
+    })
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    // 2FA required — redirect to the 2FA verification page
+    if (data.requires_2fa) {
+      window.location.href = '/2fa';
+      return;
+    }
+    window.location.href = '/dashboard';
+  } else {
+    alert.textContent = data.error;
+    alert.classList.remove('d-none');
+    btn.disabled = false;
+    btn.querySelector('.btn-text').classList.remove('d-none');
+    btn.querySelector('.btn-loader').classList.add('d-none');
+  }
+});
+
+// ── Google button loading state ──────────────────────────────
+document.getElementById('btn-google').addEventListener('click', function () {
+  this.style.opacity       = '0.7';
+  this.style.pointerEvents = 'none';
+  this.querySelector('.btn-google-text').textContent = 'Redirecting…';
+});
+</script>
+{% endblock %}

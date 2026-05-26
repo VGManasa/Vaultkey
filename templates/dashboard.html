@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — VaultKey{% endblock %}
+{% block content %}
+
+<div class="app-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-lockup">
+        <div class="brand-icon sm">
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+            <rect width="36" height="36" rx="10" fill="#c8f060"/>
+            <path d="M18 8C14.13 8 11 11.13 11 15c0 2.97 1.8 5.52 4.4 6.65V26h5.2v-4.35C23.2 20.52 25 17.97 25 15c0-3.87-3.13-7-7-7z" fill="#0a0a0a"/>
+            <circle cx="18" cy="15" r="2.5" fill="#c8f060"/>
+          </svg>
+        </div>
+        <span class="brand-name">VaultKey</span>
+      </div>
+
+      <button class="sidebar-close d-lg-none" onclick="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-search">
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="global-search" class="search-input" placeholder="Search vault..."/>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label">Notebooks</div>
+
+    <nav class="sidebar-nav" id="notebooks-nav">
+      <div class="nav-placeholder">Loading...</div>
+    </nav>
+
+    <button class="btn-new-notebook" id="btn-new-notebook">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Notebook
+    </button>
+
+    <div class="sidebar-footer">
+      <div class="acct-switcher-wrap" style="position:relative;flex:1;min-width:0;">
+        <div class="user-chip"
+             onclick="toggleAccountSwitcher(event)"
+             style="cursor:pointer;"
+             title="Switch or manage accounts">
+          <div class="user-avatar">{{ user.username[0].upper() }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ user.username }}</span>
+            <span class="user-role">Personal Vault</span>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="var(--text3)" stroke-width="2"
+               style="margin-left:auto;flex-shrink:0;transition:transform 0.2s;">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+      </div>
+
+      <button class="btn-logout" onclick="openLogoutModal()" title="Sign out">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <main class="main-content" id="main-content">
+
+    <header class="topbar">
+      <button class="topbar-menu d-lg-none" onclick="toggleSidebar()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </header>
+
+    <!-- Dashboard Home -->
+    <section class="content-section" id="section-home">
+
+      <div class="welcome-block">
+        <h2 class="welcome-heading">
+          Good to have you back,
+          <span class="accent-text">{{ user.username }}</span>
+        </h2>
+        <p class="welcome-sub">Your vault is secure and up to date.</p>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Notebooks</div>
+          <div class="stat-value" id="stat-notebooks">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Passwords Stored</div>
+          <div class="stat-value" id="stat-entries">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Member Since</div>
+          <div class="stat-value" id="stat-since">—</div>
+        </div>
+      </div>
+
+      <!-- 2FA security nudge banner (shown only when 2FA is off) -->
+      <div id="dashboard-2fa-nudge" style="display:none;margin-bottom:1.5rem;">
+        <div style="
+          display:flex;align-items:center;justify-content:space-between;gap:1rem;
+          background:rgba(240,160,96,0.08);
+          border:1px solid rgba(240,160,96,0.3);
+          border-radius:var(--radius);
+          padding:0.85rem 1.25rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f0a060" stroke-width="2" style="flex-shrink:0;">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span style="font-size:0.875rem;color:var(--text2);">
+              <strong style="color:#f0a060;">Two-factor authentication is off.</strong>
+              Add an extra layer of security to protect your vault.
+            </span>
+          </div>
+          <a href="/profile" style="
+            flex-shrink:0;
+            font-size:0.8125rem;font-weight:700;
+            color:#f0a060;text-decoration:none;
+            border:1px solid rgba(240,160,96,0.4);
+            border-radius:var(--radius-sm);
+            padding:0.35rem 0.85rem;
+            transition:background 0.2s,border-color 0.2s;">
+            Enable 2FA →
+          </a>
+        </div>
+      </div>
+
+      <div class="section-heading-row">
+        <h3 class="section-heading">Recent Notebooks</h3>
+      </div>
+
+      <div class="notebooks-grid" id="notebooks-grid">
+        <div class="nb-empty">No notebooks yet. Create one to get started.</div>
+      </div>
+
+    </section>
+
+    <!-- Notebook Detail View -->
+    <section class="content-section d-none" id="section-notebook">
+
+      <div class="entries-header">
+        <div class="entries-header-left" style="align-items:center;">
+          <div class="nb-dot" id="nb-color-dot" style="flex-shrink:0;margin-top:0;"></div>
+          <div style="display:flex;flex-direction:column;justify-content:center;">
+            <h2 class="entries-title" id="entries-title" style="margin:0;line-height:1.2;">Notebook</h2>
+            <p class="entries-sub" id="entries-sub" style="margin:0;"></p>
+          </div>
+        </div>
+
+        <button class="btn-add-entry" id="btn-add-entry">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Entry
+        </button>
+      </div>
+
+      <!-- Entry Search Bar -->
+      <div class="sidebar-search" style="padding:0 0 1rem 0;">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="entry-search" class="search-input" placeholder="Search entries..."/>
+        </div>
+      </div>
+
+      <div class="entries-list" id="entries-list">
+        <div class="entry-empty">No entries yet. Add your first password.</div>
+      </div>
+
+    </section>
+
+    <!-- Search Results -->
+    <section class="content-section d-none" id="section-search">
+      <h2 class="entries-title" style="margin-bottom:1.5rem;">Search Results</h2>
+      <div class="entries-list" id="search-results-list"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Notebook Modal
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="notebookModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content vk-modal">
+      <div class="vk-modal-header">
+        <h5 class="vk-modal-title" id="notebookModalTitle">New Notebook</h5>
+        <button type="button" class="vk-modal-close" data-bs-dismiss="modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="vk-modal-body">
+        <div class="field-group">
+          <label class="field-label">Notebook Name</label>
+          <input type="text" id="nb-name" class="field-input" placeholder="e.g. Work, Social Media"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Description <span class="optional">(optional)</span></label>
+          <input type="text" id="nb-desc" class="field-input" placeholder="Short description"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Color</label>
+          <div class="color-picker" id="color-picker">
+            <div class="color-swatch active" data-color="#4f8ef7" style="background:#4f8ef7;"></div>
+            <div class="color-swatch" data-color="#c8f060" style="background:#c8f060;"></div>
+            <div class="color-swatch" data-color="#f06090" style="background:#f06090;"></div>
+            <div class="color-swatch" data-color="#f0a060" style="background:#f0a060;"></div>
+            <div class="color-swatch" data-color="#60d4f0" style="background:#60d4f0;"></div>
+            <div class="color-swatch" data-color="#a060f0" style="background:#a060f0;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="vk-modal-footer">
+        <button class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-confirm" id="btn-save-notebook">Save Notebook</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Entry Modal
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="entryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content vk-modal">
+      <div class="vk-modal-header">
+        <h5 class="vk-modal-title" id="entryModalTitle">New Entry</h5>
+        <button type="button" class="vk-modal-close" data-bs-dismiss="modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="vk-modal-body">
+
+        <div class="field-group">
+          <label class="field-label">Title</label>
+          <input type="text" id="entry-title" class="field-input" placeholder="e.g. GitHub, Netflix"/>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Username / Email <span class="optional">(optional)</span></label>
+          <input type="text" id="entry-username" class="field-input" placeholder="username@example.com"/>
+        </div>
+
+        <!-- OLD PASSWORD -->
+        <div class="field-group" id="old-password-group">
+          <label class="field-label">Old Password</label>
+          <div class="password-wrap">
+            <input type="password" id="entry-old-password" class="field-input" placeholder="No previous password" readonly/>
+            <button type="button" class="toggle-pw" onclick="togglePassword('entry-old-password')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- NEW PASSWORD -->
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="entry-password" class="field-input" placeholder="Enter new password"/>
+            <button type="button" class="toggle-pw" onclick="togglePassword('entry-password')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <button type="button" class="btn-generate" onclick="generatePassword()">
+            Generate strong password
+          </button>
+          <div id="entry-strength-wrap" style="display:none;margin-top:0.5rem;">
+            <div style="display:flex;gap:5px;">
+              <div id="entry-sb-1" style="flex:1;height:5px;border-radius:3px;background:var(--border2);transition:background 0.3s;"></div>
+              <div id="entry-sb-2" style="flex:1;height:5px;border-radius:3px;background:var(--border2);transition:background 0.3s;"></div>
+              <div id="entry-sb-3" style="flex:1;height:5px;border-radius:3px;background:var(--border2);transition:background 0.3s;"></div>
+              <div id="entry-sb-4" style="flex:1;height:5px;border-radius:3px;background:var(--border2);transition:background 0.3s;"></div>
+            </div>
+            <span id="entry-pw-strength-label" style="margin-top:0.3rem;display:block;font-size:0.75rem;font-family:var(--mono);"></span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">URL <span class="optional">(optional)</span></label>
+          <input type="text" id="entry-url" class="field-input" placeholder="https://example.com"/>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Notes <span class="optional">(optional)</span></label>
+          <textarea id="entry-notes" class="field-input field-textarea" placeholder="Any notes..."></textarea>
+        </div>
+
+      </div>
+      <div class="vk-modal-footer">
+        <button class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-confirm" id="btn-save-entry">Save Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Logout Modal
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-content vk-modal" style="border-radius:var(--radius);overflow:hidden;">
+
+      <div class="vk-modal-header" style="padding:1.25rem 1.5rem 1rem;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--red-dim);border:1px solid rgba(255,95,109,0.25);display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </div>
+          <div>
+            <h5 class="vk-modal-title" style="margin:0;font-size:1rem;">Sign Out</h5>
+            <p id="logout-acct-hint" style="margin:0;font-size:0.75rem;color:var(--text3);">Choose how to sign out</p>
+          </div>
+        </div>
+        <button type="button" class="vk-modal-close" data-bs-dismiss="modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:0 1.5rem;"></div>
+
+      <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:0.65rem;">
+        <button id="btn-confirm-logout" class="logout-option-card">
+          <div class="logout-option-icon" style="background:var(--accent-dim);border-color:rgba(200,240,96,0.25);color:var(--accent);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </div>
+          <div class="logout-option-text">
+            <span class="logout-option-title">Sign out this account</span>
+            <span class="logout-option-sub">Removes only the current session</span>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <button id="btn-confirm-logout-all" class="logout-option-card logout-option-danger">
+          <div class="logout-option-icon" style="background:var(--red-dim);border-color:rgba(255,95,109,0.25);color:var(--red);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="logout-option-text">
+            <span class="logout-option-title">Sign out all accounts</span>
+            <span class="logout-option-sub">Clears every active session</span>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div style="padding:0 1.5rem 1.25rem;display:flex;justify-content:flex-end;">
+        <button class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Legacy delete confirm modal (kept for dashboard.js compatibility) -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content vk-modal">
+      <div class="vk-modal-header">
+        <h5 class="vk-modal-title">Confirm Delete</h5>
+      </div>
+      <div class="vk-modal-body">
+        <p class="delete-msg" id="delete-msg">Are you sure you want to delete this?</p>
+      </div>
+      <div class="vk-modal-footer">
+        <button class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-danger" id="btn-confirm-delete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="toast-container" id="toast-container"></div>
+
+<style>
+.logout-option-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  font-family: var(--font);
+}
+.logout-option-card:hover { background: var(--bg2); border-color: var(--border2); transform: translateY(-1px); }
+.logout-option-card.logout-option-danger:hover { border-color: rgba(255,95,109,0.4); background: var(--red-dim); }
+.logout-option-icon { width: 38px; height: 38px; border-radius: var(--radius-sm); border: 1px solid transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logout-option-text { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+.logout-option-title { font-size: 0.875rem; font-weight: 700; color: var(--text); }
+.logout-option-sub { font-size: 0.75rem; color: var(--text3); }
+.logout-option-card.logout-option-danger .logout-option-title { color: var(--red); }
+</style>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<script>
+  // ── Logout modal hint ────────────────────────────────────────
+  document.getElementById('logoutModal').addEventListener('show.bs.modal', async () => {
+    try {
+      const res  = await fetch('/api/accounts');
+      const data = await res.json();
+      const n    = data.accounts.length;
+      const hint = document.getElementById('logout-acct-hint');
+      hint.textContent = n > 1
+        ? `${n} accounts active — this removes only the current one`
+        : 'You have one account signed in';
+    } catch (_) {}
+  });
+
+  // Wire logout option card buttons
+  document.getElementById('btn-confirm-logout').addEventListener('click', logoutCurrent);
+  document.getElementById('btn-confirm-logout-all').addEventListener('click', logoutAll);
+
+  // ── 2FA nudge banner ─────────────────────────────────────────
+  // Show the nudge if 2FA is not enabled for this user.
+  (async function check2FANudge() {
+    try {
+      const res  = await fetch('/api/2fa/status');
+      const data = await res.json();
+      if (!data.totp_enabled) {
+        document.getElementById('dashboard-2fa-nudge').style.display = 'block';
+      }
+    } catch (_) {}
+  })();
+</script>
+
+{% endblock %}

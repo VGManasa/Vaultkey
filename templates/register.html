@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Create Account — VaultKey{% endblock %}
+{% block content %}
+<div class="auth-root">
+  <div class="auth-brand">
+    <div class="brand-lockup">
+      <div class="brand-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="#c8f060"/>
+          <path d="M18 8C14.13 8 11 11.13 11 15c0 2.97 1.8 5.52 4.4 6.65V26h5.2v-4.35C23.2 20.52 25 17.97 25 15c0-3.87-3.13-7-7-7z" fill="#0a0a0a"/>
+          <circle cx="18" cy="15" r="2.5" fill="#c8f060"/>
+        </svg>
+      </div>
+      <span class="brand-name">VaultKey</span>
+    </div>
+    <p class="brand-tagline">Secure your digital life, beautifully.</p>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <h1 class="auth-title">Create your vault</h1>
+      <p class="auth-sub">Set up your account in seconds</p>
+    </div>
+
+    <div id="auth-alert" class="auth-alert d-none"></div>
+    <div id="auth-success" class="auth-success d-none"></div>
+
+    <form id="register-form" class="auth-form" autocomplete="off" novalidate>
+      <div class="field-group">
+        <label class="field-label">Username</label>
+        <input type="text" id="username" class="field-input" placeholder="yourname" autocomplete="off" required/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email Address</label>
+        <input type="email" id="email" class="field-input" placeholder="you@example.com" autocomplete="off" required/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Master Password</label>
+        <div class="password-wrap">
+          <input type="password" id="password" class="field-input" placeholder="Min. 8 characters" autocomplete="new-password" required/>
+          <button type="button" class="toggle-pw" onclick="togglePassword('password')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <button type="button" class="btn-generate" id="btn-generate-register">
+          Generate strong password
+        </button>
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        <span class="strength-label" id="strength-label"></span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Confirm Password</label>
+        <div class="password-wrap">
+          <input type="password" id="confirm" class="field-input" placeholder="Repeat password" autocomplete="new-password" required/>
+          <button type="button" class="toggle-pw" onclick="togglePassword('confirm')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary-full" id="register-btn">
+        <span class="btn-text">Create Account</span>
+        <span class="btn-loader d-none"></span>
+      </button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a href="/login" class="auth-link">Sign in</a></p>
+  </div>
+</div>
+
+<script>
+// ── Password strength meter ──────────────────────────────────
+const pwInput = document.getElementById('password');
+
+pwInput.addEventListener('input', function () {
+  const val    = this.value;
+  const fill   = document.getElementById('strength-fill');
+  const label  = document.getElementById('strength-label');
+  let score = 0;
+  if (val.length >= 8)          score++;
+  if (/[A-Z]/.test(val))        score++;
+  if (/[0-9]/.test(val))        score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const colors = ['', '#e74c3c', '#f39c12', '#3498db', '#c8f060'];
+  fill.style.width      = (score * 25) + '%';
+  fill.style.background = colors[score];
+  label.textContent     = levels[score] || '';
+  label.style.color     = colors[score];
+});
+
+// ── Generate strong password ─────────────────────────────────
+document.getElementById('btn-generate-register')
+  .addEventListener('click', function () {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    const array = new Uint32Array(16);
+    crypto.getRandomValues(array);
+    let pwd = '';
+    for (let i = 0; i < 16; i++) {
+      pwd += chars[array[i] % chars.length];
+    }
+
+    const pwField      = document.getElementById('password');
+    const confirmField = document.getElementById('confirm');
+    pwField.value      = pwd;
+    confirmField.value = pwd;
+
+    pwField.type      = 'text';
+    confirmField.type = 'text';
+    setTimeout(() => {
+      pwField.type      = 'password';
+      confirmField.type = 'password';
+    }, 2000);
+
+    pwField.dispatchEvent(new Event('input'));
+  });
+
+// ── Register form submit ─────────────────────────────────────
+document.getElementById('register-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const btn     = document.getElementById('register-btn');
+  const alert   = document.getElementById('auth-alert');
+  const success = document.getElementById('auth-success');
+  const pw      = document.getElementById('password').value;
+  const conf    = document.getElementById('confirm').value;
+
+  if (pw !== conf) {
+    alert.textContent = 'Passwords do not match';
+    alert.classList.remove('d-none');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.querySelector('.btn-text').classList.add('d-none');
+  btn.querySelector('.btn-loader').classList.remove('d-none');
+  alert.classList.add('d-none');
+
+  const res = await fetch('/api/register', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({
+      username: document.getElementById('username').value,
+      email:    document.getElementById('email').value,
+      password: pw
+    })
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    success.textContent = 'Account created! Redirecting to login...';
+    success.classList.remove('d-none');
+    setTimeout(() => window.location.href = '/login', 1500);
+  } else {
+    alert.textContent = data.error;
+    alert.classList.remove('d-none');
+    btn.disabled = false;
+    btn.querySelector('.btn-text').classList.remove('d-none');
+    btn.querySelector('.btn-loader').classList.add('d-none');
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VaultKey — Encrypted Password Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,700;6..12,800;6..12,900&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:         #0a0c10;
+      --bg2:        #111520;
+      --bg3:        #181d29;
+      --border:     rgba(255,255,255,0.07);
+      --border2:    rgba(255,255,255,0.13);
+      --text:       #e8ecf4;
+      --text2:      #8892a4;
+      --text3:      #4a5568;
+      --accent:     #c8f060;
+      --accent2:    #a8d040;
+      --accent-dim: rgba(200,240,96,0.09);
+      --red:        #ff5f6d;
+      --blue:       #4f8ef7;
+      --radius:     10px;
+      --radius-sm:  6px;
+      --font:         'Syne', sans-serif;
+      --font-display: 'Nunito Sans', sans-serif;
+      --mono:       'DM Mono', monospace;
+      --max:        1140px;
+      --gutter:     2.5rem;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* ── UTILITIES ───────────────────────────────────────── */
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+    }
+
+    .divider { height: 1px; background: var(--border); }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      background: rgba(10,12,16,0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Logo: far left */
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      font-family: var(--font);
+    }
+
+    /* Center links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2.25rem;
+      list-style: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .nav-links a {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text2);
+      transition: color 0.2s;
+      font-family: var(--font);
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* Right: Sign in + Get started */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .btn-ghost {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text2);
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      background: none;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.22); background: var(--bg3); }
+
+    .btn-accent {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #0a0c10;
+      padding: 0.4rem 1.1rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-accent:hover { background: var(--accent2); }
+
+    /* ── HERO ────────────────────────────────────────────── */
+    .hero {
+      padding: 130px var(--gutter) 90px;
+      max-width: var(--max);
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      font-family: var(--font);
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 22px;
+      height: 2px;
+      background: var(--accent);
+      display: block;
+      border-radius: 2px;
+    }
+
+    .hero-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 5.5vw, 4.25rem);
+      font-weight: 900;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      max-width: 820px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-heading .hl { color: var(--accent); }
+
+    .hero-body {
+      font-size: 1rem;
+      color: var(--text2);
+      line-height: 1.75;
+      max-width: 540px;
+      margin-bottom: 2.5rem;
+      font-weight: 400;
+      font-family: var(--font);
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 800;
+      color: #0a0c10;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.6rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      text-decoration: none;
+    }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text2);
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1.6rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      text-decoration: none;
+    }
+    .btn-outline:hover { color: var(--text); border-color: rgba(255,255,255,0.22); background: var(--bg3); }
+
+    /* ── NUMBERS BAND ────────────────────────────────────── */
+    .numbers {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .numbers-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .number-item {
+      padding: 2.25rem 0;
+      border-right: 1px solid var(--border);
+      padding-right: 2.5rem;
+      padding-left: 2.5rem;
+    }
+    .number-item:first-child { padding-left: 0; }
+    .number-item:last-child  { border-right: none; }
+
+    .number-val {
+      font-family: var(--font-display);
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: -0.04em;
+      display: block;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .number-desc {
+      font-family: var(--font);
+      font-size: 0.8rem;
+      color: var(--text3);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── SECTION SHARED ──────────────────────────────────── */
+    .section {
+      padding: 5.5rem 0;
+    }
+
+    .section-alt {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-family: var(--font);
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.9rem;
+    }
+    .section-label::before { content: ''; width: 20px; height: 2px; background: var(--accent); display: block; border-radius: 2px; }
+
+    h2.section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.25rem);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      color: var(--text);
+    }
+
+    .section-sub {
+      font-family: var(--font);
+      font-size: 0.9375rem;
+      color: var(--text2);
+      line-height: 1.75;
+      max-width: 520px;
+      margin-top: 0.75rem;
+    }
+
+    /* ── WHAT YOU GET — big horizontal cards ─────────────── */
+    .get-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 3rem;
+    }
+
+    .get-card {
+      background: var(--bg);
+      padding: 2rem 1.75rem;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .get-card:hover { background: var(--bg2); }
+
+    .get-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 1.25rem;
+    }
+
+    .get-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.1rem;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,240,96,0.15);
+      color: var(--accent);
+    }
+    .get-icon.blue { background: rgba(79,142,247,0.08); border-color: rgba(79,142,247,0.18); color: var(--blue); }
+    .get-icon.dim  { background: var(--bg3); border-color: var(--border2); color: var(--text2); }
+
+    /* Feature card titles → Nunito Sans */
+    .get-title {
+      font-family: var(--font-display);
+      font-size: 0.9375rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .get-desc {
+      font-family: var(--font);
+      font-size: 0.825rem;
+      color: var(--text2);
+      line-height: 1.7;
+    }
+
+    /* ── HOW IT WORKS — numbered steps, full-width ───────── */
+    .steps {
+      counter-reset: step;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 3rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .step:last-child { border-bottom: none; }
+    .step:hover { background: var(--bg2); }
+
+    .step-index {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .step-body {
+      padding: 1.6rem 2rem;
+    }
+
+    /* Step titles → Nunito Sans */
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 0.9375rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.01em;
+    }
+
+    .step-desc {
+      font-family: var(--font);
+      font-size: 0.825rem;
+      color: var(--text2);
+      line-height: 1.7;
+    }
+
+    /* ── SECURITY — two-column ───────────────────────────── */
+    .sec-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: start;
+      margin-top: 0;
+    }
+
+    .sec-rows {
+      display: flex;
+      flex-direction: column;
+      margin-top: 2rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .sec-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .sec-row:last-child { border-bottom: none; }
+    .sec-row:hover { background: var(--bg2); }
+
+    .sec-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Security row names → Nunito Sans */
+    .sec-name {
+      font-family: var(--font-display);
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .sec-tag {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      color: var(--text3);
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      padding: 0.12rem 0.5rem;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* right side: plain text blocks */
+    .sec-right { padding-top: 0.25rem; }
+
+    .sec-right .section-label { margin-bottom: 0.9rem; }
+
+    .sec-callout {
+      font-family: var(--font);
+      font-size: 1rem;
+      color: var(--text2);
+      line-height: 1.8;
+      margin-top: 1.25rem;
+    }
+
+    .sec-callout strong { color: var(--text); font-weight: 700; }
+
+    .sec-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      margin-top: 2rem;
+      padding: 1.1rem 1.25rem;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,240,96,0.14);
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 0.8125rem;
+      color: var(--text2);
+      line-height: 1.65;
+    }
+    .sec-note svg { color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+
+    /* ── TRUST STRIP ─────────────────────────────────────── */
+    .trust {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .trust-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 1.6rem var(--gutter);
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .trust-label {
+      font-family: var(--font);
+      font-size: 0.69rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text3);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .trust-items {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text2);
+    }
+    .trust-item svg { color: var(--accent); flex-shrink: 0; }
+
+    /* ── CTA SECTION ─────────────────────────────────────── */
+    .cta-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+
+    .cta-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 5rem var(--gutter);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .cta-sub {
+      font-family: var(--font);
+      font-size: 0.9rem;
+      color: var(--text2);
+      line-height: 1.7;
+      max-width: 420px;
+    }
+
+    .cta-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 1.75rem var(--gutter);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text2);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+    }
+
+    .footer-links a {
+      font-family: var(--font);
+      font-size: 0.79rem;
+      color: var(--text3);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text2); }
+
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--text3);
+      font-family: var(--mono);
+    }
+
+    /* ── SCROLL REVEAL ───────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.06s; }
+    .d2 { transition-delay: 0.12s; }
+    .d3 { transition-delay: 0.18s; }
+    .d4 { transition-delay: 0.24s; }
+    .d5 { transition-delay: 0.30s; }
+    .d6 { transition-delay: 0.36s; }
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .numbers-inner    { grid-template-columns: repeat(2, 1fr); }
+      .number-item      { border-bottom: 1px solid var(--border); }
+      .number-item:nth-child(2) { border-right: none; }
+      .get-grid         { grid-template-columns: 1fr 1fr; }
+      .sec-layout       { grid-template-columns: 1fr; gap: 2.5rem; }
+      .cta-inner        { grid-template-columns: 1fr; }
+      .cta-actions      { flex-direction: row; }
+    }
+
+    @media (max-width: 640px) {
+      :root { --gutter: 1.25rem; }
+      nav .nav-links    { display: none; }
+      .hero             { padding-top: 100px; padding-bottom: 60px; }
+      .section          { padding: 3.5rem 0; }
+      .numbers-inner    { grid-template-columns: 1fr 1fr; }
+      .number-item      { padding: 1.5rem 1rem; }
+      .get-grid         { grid-template-columns: 1fr; }
+      .step             { grid-template-columns: 52px 1fr; }
+      .step-body        { padding: 1.25rem 1.25rem; }
+      footer            { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .footer-links     { flex-wrap: wrap; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════
+     NAV
+═══════════════════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <!-- Logo: far left -->
+    <div class="nav-brand">
+      <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+        <rect width="36" height="36" rx="10" fill="#c8f060"/>
+        <path d="M18 8C14.13 8 11 11.13 11 15c0 2.97 1.8 5.52 4.4 6.65V26h5.2v-4.35C23.2 20.52 25 17.97 25 15c0-3.87-3.13-7-7-7z" fill="#0a0a0a"/>
+        <circle cx="18" cy="15" r="2.5" fill="#c8f060"/>
+      </svg>
+      <span class="brand-name">VaultKey</span>
+    </div>
+
+    <!-- Links: centered -->
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#security">Security</a></li>
+    </ul>
+
+    <!-- Buttons: far right -->
+    <div class="nav-right">
+      <a href="/login" class="btn-ghost">Sign in</a>
+      <a href="/register" class="btn-accent">Get started</a>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════
+     HERO
+═══════════════════════════════ -->
+<section class="hero reveal">
+  <div class="hero-tag">Password Manager</div>
+  <h1 class="hero-heading">
+    Secure every password.<br>
+    <span class="hl">Zero compromises.</span>
+  </h1>
+  <p class="hero-body">
+    VaultKey encrypts your passwords with AES-256 before they ever touch our servers. Organised into notebooks, protected by two-factor auth — only you hold the key.
+  </p>
+  <div class="hero-cta">
+    <a href="/register" class="btn-primary">
+      Create your vault
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+    <a href="/login" class="btn-outline">Sign in</a>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════
+     TRUST STRIP
+═══════════════════════════════ -->
+<div class="trust">
+  <div class="trust-inner reveal">
+    <span class="trust-label">Built on</span>
+    <div class="trust-items">
+      <div class="trust-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        AES-256 encryption
+      </div>
+      <div class="trust-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Zero-knowledge
+      </div>
+      <div class="trust-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Two-factor auth
+      </div>
+      <div class="trust-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Auto-lock vault
+      </div>
+      <div class="trust-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Google Sign-In
+      </div>
+      <div class="trust-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export anytime
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════
+     NUMBERS
+═══════════════════════════════ -->
+<div class="numbers">
+  <div class="numbers-inner reveal">
+    <div class="number-item">
+      <span class="number-val">AES-256</span>
+      <span class="number-desc">Encryption standard</span>
+    </div>
+    <div class="number-item">
+      <span class="number-val">390K</span>
+      <span class="number-desc">PBKDF2 key-stretch rounds</span>
+    </div>
+    <div class="number-item">
+      <span class="number-val">0</span>
+      <span class="number-desc">Plaintext ever stored</span>
+    </div>
+    <div class="number-item">
+      <span class="number-val">2FA</span>
+      <span class="number-desc">TOTP second-factor support</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════
+     FEATURES
+═══════════════════════════════ -->
+<div class="section" id="features">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+      <p class="section-sub">A focused vault — notebooks to organise, a strong generator to create, instant search to find, and nothing unnecessary cluttering the way.</p>
+    </div>
+
+    <div class="get-grid">
+      <div class="get-card reveal d1">
+        <span class="get-num">01</span>
+        <div class="get-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </div>
+        <div class="get-title">Notebooks</div>
+        <div class="get-desc">Group passwords into colour-coded notebooks — Work, Personal, Finance. Rename, duplicate, and reorder freely.</div>
+      </div>
+
+      <div class="get-card reveal d2">
+        <span class="get-num">02</span>
+        <div class="get-icon blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="get-title">Vault Lock</div>
+        <div class="get-desc">Your vault locks automatically after inactivity. Unlock with your master password — no full sign-in needed.</div>
+      </div>
+
+      <div class="get-card reveal d3">
+        <span class="get-num">03</span>
+        <div class="get-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div class="get-title">Two-Factor Auth</div>
+        <div class="get-desc">Pair any TOTP authenticator app as a second sign-in factor. Backup codes included if you lose your device.</div>
+      </div>
+
+      <div class="get-card reveal d4">
+        <span class="get-num">04</span>
+        <div class="get-icon blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <div class="get-title">Instant Search</div>
+        <div class="get-desc">Search across every notebook by name, username, or URL. Results appear as you type — no page reload.</div>
+      </div>
+
+      <div class="get-card reveal d5">
+        <span class="get-num">05</span>
+        <div class="get-icon dim">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="get-title">Multiple Accounts</div>
+        <div class="get-desc">Switch between personal, work, or family vaults in one click — each isolated and independently locked.</div>
+      </div>
+
+      <div class="get-card reveal d6">
+        <span class="get-num">06</span>
+        <div class="get-icon dim">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <div class="get-title">Export Vault</div>
+        <div class="get-desc">Download your entire vault as JSON at any time. Your data is yours — no lock-in, ever.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════ -->
+<div class="section section-alt" id="how">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="section-label">How it works</div>
+      <h2 class="section-title">Up and running<br>in under a minute.</h2>
+    </div>
+
+    <div class="steps reveal d1">
+      <div class="step">
+        <div class="step-index">01</div>
+        <div class="step-body">
+          <div class="step-title">Create your vault</div>
+          <div class="step-desc">Register with your email or continue with Google. Set a strong master password — that's the only credential that unlocks everything inside.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-index">02</div>
+        <div class="step-body">
+          <div class="step-title">Add your passwords</div>
+          <div class="step-desc">Organise entries into notebooks. Generate cryptographically strong passwords with one click, or paste your own. Store usernames, URLs, and notes alongside.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-index">03</div>
+        <div class="step-body">
+          <div class="step-title">Access from any device</div>
+          <div class="step-desc">Sign in from any browser on any device. Your vault unlocks with your master password — every entry decrypted and ready instantly.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-index">04</div>
+        <div class="step-body">
+          <div class="step-title">Stay secure automatically</div>
+          <div class="step-desc">Enable 2FA for a second layer. The vault locks itself when you're idle. Your master password is never transmitted — it never leaves your device.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════
+     SECURITY
+═══════════════════════════════ -->
+<div class="section" id="security">
+  <div class="wrap">
+    <div class="sec-layout">
+
+      <!-- Left: tech stack list -->
+      <div class="reveal">
+        <div class="section-label">Security</div>
+        <h2 class="section-title">Zero-knowledge<br>by design.</h2>
+        <div class="sec-rows">
+          <div class="sec-row">
+            <div class="sec-dot"></div>
+            <div class="sec-name">AES-256 via Fernet</div>
+            <div class="sec-tag">Symmetric</div>
+          </div>
+          <div class="sec-row">
+            <div class="sec-dot"></div>
+            <div class="sec-name">PBKDF2-SHA256 · 390,000 rounds</div>
+            <div class="sec-tag">Key derivation</div>
+          </div>
+          <div class="sec-row">
+            <div class="sec-dot"></div>
+            <div class="sec-name">Bcrypt password hashing</div>
+            <div class="sec-tag">Auth</div>
+          </div>
+          <div class="sec-row">
+            <div class="sec-dot"></div>
+            <div class="sec-name">Https · SameSite cookies</div>
+            <div class="sec-tag">Session</div>
+          </div>
+          <div class="sec-row">
+            <div class="sec-dot"></div>
+            <div class="sec-name">TOTP two-factor authentication</div>
+            <div class="sec-tag">2FA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: explanation -->
+      <div class="sec-right reveal d2">
+        <p class="sec-callout">
+          Your master password is used <strong>only on your device</strong> to derive the encryption key. We never see it, never store it, and can never recover it.
+        </p>
+        <p class="sec-callout" style="margin-top:1rem;">
+          Every password you save is encrypted before it leaves your browser. What reaches our servers is an <strong>opaque encrypted blob</strong> — meaningless without your key.
+        </p>
+        <p class="sec-callout" style="margin-top:1rem;">
+          Even if our entire database were exposed, an attacker would have no plaintext passwords — only ciphertext protected by 390,000 rounds of key-stretching.
+        </p>
+        <div class="sec-note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+          Only your master password can decrypt your vault. Not us. Not anyone else.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════
+     CTA
+═══════════════════════════════ -->
+<div class="cta-section">
+  <div class="cta-inner reveal">
+    <div>
+      <div class="cta-title">Ready to secure your vault?</div>
+      <p class="cta-sub">Free to use. No trial period. No compromises on security. Create an account in under a minute.</p>
+    </div>
+    <div class="cta-actions">
+      <a href="/register" class="btn-primary">
+        Create your vault
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a href="/login" class="btn-outline">Sign in</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════
+     FOOTER
+═══════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <svg width="18" height="18" viewBox="0 0 36 36" fill="none">
+        <rect width="36" height="36" rx="10" fill="#c8f060"/>
+        <path d="M18 8C14.13 8 11 11.13 11 15c0 2.97 1.8 5.52 4.4 6.65V26h5.2v-4.35C23.2 20.52 25 17.97 25 15c0-3.87-3.13-7-7-7z" fill="#0a0a0a"/>
+        <circle cx="18" cy="15" r="2.5" fill="#c8f060"/>
+      </svg>
+      VaultKey
+    </div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#security">Security</a>
+      <a href="/login">Sign in</a>
+      <a href="/register">Register</a>
+    </div>
+    <div class="footer-copy">VaultKey © 2026 • Built by Manasa</div>
+  </div>
+</footer>
+
+
+<script>
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>

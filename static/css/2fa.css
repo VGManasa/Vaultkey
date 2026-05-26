@@ -1,0 +1,231 @@
+/* ═══════════════════════════════════════════════════════════
+   VaultKey — 2FA Page Stylesheet
+   Extends main.css; place <link> after main.css in base.html
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ─── Shield Icon ─────────────────────────────────────────── */
+
+.tfa-shield-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid rgba(200, 240, 96, 0.25);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  animation: shieldPop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes shieldPop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+
+/* ─── TOTP Code Input ─────────────────────────────────────── */
+
+.tfa-code-input {
+  font-family: var(--mono) !important;
+  font-size: 1.75rem !important;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-align: center;
+  padding: 0.75rem 1rem !important;
+  caret-color: var(--accent);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tfa-code-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.tfa-code-input::placeholder {
+  letter-spacing: 0.25em;
+  color: var(--text3);
+}
+
+
+/* ─── Toggle / Link Button ────────────────────────────────── */
+
+.tfa-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: block;
+  margin: 0.5rem auto 0;
+  transition: color 0.2s;
+}
+
+.tfa-toggle-btn:hover { color: var(--accent2); }
+
+
+/* ─── Section Transitions ─────────────────────────────────── */
+
+.tfa-section {
+  animation: sectionFade 0.25s ease;
+}
+
+@keyframes sectionFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ─── Backup Code Input ───────────────────────────────────── */
+
+.tfa-backup-input {
+  font-family: var(--mono) !important;
+  font-size: 1rem !important;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  padding: 0.65rem 1rem !important;
+  caret-color: var(--accent);
+}
+
+.tfa-backup-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.tfa-backup-input::placeholder {
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  color: var(--text3);
+}
+
+
+/* ─── Helper Text ─────────────────────────────────────────── */
+
+.tfa-helper {
+  font-size: 0.75rem;
+  color: var(--text3);
+  text-align: center;
+  margin-top: 0.4rem;
+  display: block;
+  line-height: 1.5;
+}
+
+.tfa-helper-left {
+  text-align: left;
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text3);
+  margin-top: 0.3rem;
+  line-height: 1.5;
+}
+
+
+/* ─── Divider ─────────────────────────────────────────────── */
+
+.tfa-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.tfa-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+}
+
+.tfa-divider-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+
+/* ─── Auth Card Header (centred variant) ──────────────────── */
+
+.tfa-card-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.tfa-card-header .auth-title  { margin-top: 0; }
+.tfa-card-header .auth-sub    { margin-top: 0.25rem; }
+
+
+/* ─── Alert / Success overrides (keep same, just docs) ───── */
+/* .auth-alert  and .auth-success already defined in main.css  */
+
+
+/* ─── Verify button loading state ─────────────────────────── */
+
+.tfa-btn-loader {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #0a0c10;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* ─── Back link ───────────────────────────────────────────── */
+
+.tfa-back-link {
+  display: block;
+  text-align: center;
+  color: var(--text2);
+  font-size: 0.875rem;
+  margin-top: 1.25rem;
+}
+
+.tfa-back-link a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.tfa-back-link a:hover { color: var(--accent2); }
+
+
+/* ─── Remaining codes warning pill ───────────────────────── */
+
+.tfa-warn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(240, 160, 96, 0.1);
+  border: 1px solid rgba(240, 160, 96, 0.3);
+  color: #f0a060;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  margin-top: 0.5rem;
+}
+
+
+/* ─── Responsive tweaks ───────────────────────────────────── */
+
+@media (max-width: 576px) {
+  .tfa-code-input {
+    font-size: 1.4rem !important;
+    letter-spacing: 0.25em;
+  }
+}
